@@ -1,0 +1,50 @@
+%import common.INT
+%import common.FLOAT
+%import common.CNAME -> NAME // This is a standard and robust definition for NAME
+%import common.WS
+%import common.C_COMMENT
+%ignore WS
+
+start: expression
+?expression: arith
+    | atom
+    | comparison
+    | conditional
+    | conjunction
+    | disjunction
+
+?conditional: "if" expression "then" expression "else" expression
+
+?disjunction: conjunction ("or" conjunction )*
+
+?conjunction: inversion ("and" inversion )*
+
+?inversion: (NOT)? inversion
+    | comparison
+
+NOT: "not"
+
+?comparison: arith
+    | arith (COMP_OP) arith
+
+COMP_OP: "==" | "!=" | "<" | "<=" | ">" | ">="
+
+?arith: product
+    | arith ARITH_OP product
+
+ARITH_OP: "+" | "-"
+
+?product: num_atom
+    | product PRODUCT_OP num_atom
+
+PRODUCT_OP: "*" | "/"
+
+?num_atom: atom
+    | ARITH_OP num_atom -> unary
+    | "(" expression ")"
+
+?atom: INT
+    | FLOAT
+    | BOOL
+
+BOOL: /(True|False)/

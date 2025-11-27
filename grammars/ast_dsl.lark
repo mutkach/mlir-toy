@@ -1,0 +1,95 @@
+%import common.WS_INLINE
+%import python.STRING
+%ignore WS_INLINE
+%import common.WS
+%ignore WS
+
+?start: expression
+?expression: atom
+    | expression
+    | arith
+    | comparison
+    | conditional
+    | disjunction
+
+?disjunction: conjunction ("or" conjunction )+
+    | conjunction
+
+?conjunction: inversion ("and" inversion )+
+    | inversion
+
+?inversion: "not" inversion
+    | comparison
+
+?conditional: "if" expression "then" expression "else" expression "end"
+
+?list: "[" expression ("," expression)*  "]"
+
+?comparison: arith
+    | arith "==" arith -> comp_eq
+    | arith "!=" arith -> comp_ne
+    | arith "<" arith -> comp_lt
+    | arith "<=" arith -> comp_le
+    | arith ">" arith -> comp_gt
+    | arith ">=" arith -> comp_ge
+    | arith "in" arith -> comp_in
+    | arith "not" "in" arith -> comp_not_in
+
+
+
+?arith: product
+    | arith "+" product -> add
+    | arith "-" product -> sub
+
+
+?product: num_atom
+    | product "*" num_atom -> mult
+    | product "/" num_atom -> div
+
+
+?num_atom: atom
+    | negation
+    | call
+    | VARIABLE
+    | "(" expression ")"
+
+negation: "-" num_atom
+
+call: FUNC "(" [arguments] ")"
+
+?arguments: expression ("," expression)*
+
+?numeric: FLOAT
+    | INT
+
+?atom: DATETIME
+    | TIME
+    | DATE
+    | PERIOD
+    | TIMEZONE
+    | FLOAT
+    | INT
+    | STRING
+    | VARIABLE
+    | BOOL
+    | NONE
+    | list
+
+
+
+
+//VARIABLE: /(?!(?:and|or|if|then|else|end)\b)[_a-zA-Z][_a-zA-Z0-9]*/
+
+FUNC: /{"|".join(list_of_functions + ['default_func'])}/
+VARIABLE: /{"|".join(list_of_variables + ['default_name'])}/
+
+DIGIT: /[0-9]/
+FLOAT: /[0-9]+\.[0-9]+/
+INT: /\\-?0|[1-9][0-9]*/
+BOOL: /True|False/
+DATETIME: "DT" STRING
+DATE: "D" STRING
+TIME: "T" STRING
+TIMEZONE: "TZ" STRING
+PERIOD: "P" STRING
+NONE: "None"
