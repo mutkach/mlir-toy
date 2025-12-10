@@ -14,12 +14,14 @@
 
 ?simple_statement: definition
                  | expression
+                 | return
 
 ?block_statement: function_def
 
+return: "return" expression
+
 ?expression: expression "+" term   -> add
     | expression "-" term   -> sub
-    | "return" expression -> return_stmt
     | term
 
 ?term : term "*" factor   -> mul
